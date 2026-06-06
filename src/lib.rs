@@ -1,71 +1,101 @@
-use wasm_bindgen::prelude::*;
-use js_sys::futures::JsFuture;
-use wasm_bindgen::JsCast;
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
 
-#[wasm_bindgen(module = "/ocgcore.js")]
-extern "C" {
-    #[derive(Debug, Clone, PartialEq)]
-    pub type OCGCore;
+mod backend;
+mod native;
+mod types;
+mod wasm;
 
-    #[wasm_bindgen(js_name = default)]
-    fn _init() -> js_sys::Promise;
+use std::ffi::c_void;
 
-    #[wasm_bindgen(method, js_name = _OCG_GetVersion)]
-    pub fn get_version(this: &OCGCore, major: u32, minor: u32);
+use crate::backend::OCGCoreBackend;
 
-    #[wasm_bindgen(method, js_name = _OCG_CreateDuel)]
-    pub fn create_duel(this: &OCGCore, duel: u32, options: u32) -> i32;
+use types::OCG_Duel;
+use types::OCG_DuelOptions;
+use types::OCG_NewCardInfo;
 
-    #[wasm_bindgen(method, js_name = _OCG_StartDuel)]
-    pub fn start_duel(this: &OCGCore, duel: u32);
-
-    #[wasm_bindgen(method, js_name = _OCG_DuelProcess)]
-    pub fn process(this: &OCGCore, duel: u32) -> u32;
-
-    #[wasm_bindgen(method, js_name = _OCG_DuelGetMessage)]
-    pub fn get_message(this: &OCGCore, duel: u32, length_ptr: u32) -> u32;
-
-    #[wasm_bindgen(method, js_name = _OCG_DuelSetResponse)]
-    pub fn set_response(this: &OCGCore, duel: u32, response_ptr: u32, len: u32);
-
-    #[wasm_bindgen(method, js_name = _OCG_DuelNewCard)]
-    pub fn add_card(this: &OCGCore, duel: u32, info: u32);
-
-    #[wasm_bindgen(method, js_name = _OCG_LoadScript)]
-    pub fn load_script(this: &OCGCore, duel: u32, buffer: u32, len: u32, name: u32) -> i32;
-
-    #[wasm_bindgen(method, js_name = _OCG_DestroyDuel)]
-    pub fn destroy_duel(this: &OCGCore, duel: u32);
-
-    #[wasm_bindgen(method, js_name = _OCG_DuelQueryCount)]
-    pub fn query_count(this: &OCGCore, duel: u32, team: u8, location: u32) -> u32;
-
-    #[wasm_bindgen(method, js_name = _OCG_DuelQueryLocation)]
-    pub fn query_location(this: &OCGCore, duel: u32, length_ptr: u32, info_ptr: u32)
-    -> u32;
-
-    // Emscripten helpers
-    #[wasm_bindgen(method, getter, js_name = wasmMemory)]
-    pub fn get_wasm_memory(this: &OCGCore) -> js_sys::WebAssembly::Memory;
-
-    #[wasm_bindgen(method, js_name = _malloc)]
-    pub fn malloc(this: &OCGCore, size: u32) -> u32;
-
-    #[wasm_bindgen(method, js_name = _free)]
-    pub fn free(this: &OCGCore, ptr: u32);
-
-    #[wasm_bindgen(method, js_name = addFunction)]
-    pub fn add_function(this: &OCGCore, func: &js_sys::Function, signature: &str) -> u32;
+pub struct OCGCore {
+    backend: Box<dyn OCGCoreBackend + Send + Sync>,
 }
 
 impl OCGCore {
     pub async fn new() -> Self {
-        let promise = _init();
+        #[cfg(target_arch = "wasm32")]
+        {
+            use crate::wasm::WasmCore;
+            Self {
+                backend: Box::new(WasmCore::new().await),
+            }
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            use crate::native::NativeCore;
+            Self {
+                backend: Box::new(NativeCore {}),
+            }
+        }
+    }
+}
 
-        let ocgcore = JsFuture::from(promise)
-            .await
-            .unwrap();
-
-        ocgcore.unchecked_into()
+impl OCGCore {
+    pub fn OCG_GetVersion(&self, major: &mut i32, minor: &mut i32) {
+        self.backend.OCG_GetVersion(major, minor);
+    }
+    pub fn OCG_CreateDuel(
+        &self,
+        out_ocg_duel: *mut OCG_Duel,
+        options_ptr: *const OCG_DuelOptions,
+    ) -> i32 {
+        self.backend.OCG_CreateDuel(out_ocg_duel, options_ptr)
+    }
+    pub fn OCG_DestroyDuel(&self, ocg_duel: OCG_Duel) {
+        self.backend.OCG_DestroyDuel(ocg_duel)
+    }
+    pub fn OCG_DuelNewCard(&self, ocg_duel: OCG_Duel, info_ptr: *const OCG_NewCardInfo) {
+        self.backend.OCG_DuelNewCard(ocg_duel, info_ptr)
+    }
+    pub fn OCG_StartDuel(&self, ocg_duel: OCG_Duel) {
+        self.backend.OCG_StartDuel(ocg_duel)
+    }
+    pub fn OCG_DuelProcess(&self, ocg_duel: OCG_Duel) -> i32 {
+        self.backend.OCG_DuelProcess(ocg_duel)
+    }
+    pub fn OCG_DuelGetMessage(&self, ocg_duel: OCG_Duel, length: *mut u32) -> *mut c_void {
+        self.backend.OCG_DuelGetMessage(ocg_duel, length)
+    }
+    pub fn OCG_DuelSetResponse(&self, ocg_duel: OCG_Duel, buffer: *const c_void, length: u32) {
+        self.backend.OCG_DuelSetResponse(ocg_duel, buffer, length)
+    }
+    pub fn OCG_LoadScript(
+        &self,
+        ocg_duel: OCG_Duel,
+        buffer: *const std::ffi::c_char,
+        length: u32,
+        name: *const std::ffi::c_char,
+    ) -> i32 {
+        self.backend.OCG_LoadScript(ocg_duel, buffer, length, name)
+    }
+    pub fn OCG_DuelQueryCount(&self, ocg_duel: OCG_Duel, team: u8, loc: u32) -> u32 {
+        self.backend.OCG_DuelQueryCount(ocg_duel, team, loc)
+    }
+    pub fn OCG_DuelQuery(
+        &self,
+        ocg_duel: OCG_Duel,
+        length: *mut u32,
+        info_ptr: *const types::OCG_QueryInfo,
+    ) -> *mut c_void {
+        self.backend.OCG_DuelQuery(ocg_duel, length, info_ptr)
+    }
+    pub fn OCG_DuelQueryField(&self, ocg_duel: OCG_Duel, length: *mut u32) -> *mut c_void {
+        self.backend.OCG_DuelQueryField(ocg_duel, length)
+    }
+    pub fn OCG_DuelQueryLocation(
+        &self,
+        ocg_duel: OCG_Duel,
+        length: *mut u32,
+        info_ptr: *const types::OCG_QueryInfo,
+    ) -> *mut c_void {
+        self.backend
+            .OCG_DuelQueryLocation(ocg_duel, length, info_ptr)
     }
 }
