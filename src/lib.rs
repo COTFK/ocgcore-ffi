@@ -1,0 +1,71 @@
+use wasm_bindgen::prelude::*;
+use js_sys::futures::JsFuture;
+use wasm_bindgen::JsCast;
+
+#[wasm_bindgen(module = "/ocgcore.js")]
+extern "C" {
+    #[derive(Debug, Clone, PartialEq)]
+    pub type OCGCore;
+
+    #[wasm_bindgen(js_name = default)]
+    fn _init() -> js_sys::Promise;
+
+    #[wasm_bindgen(method, js_name = _OCG_GetVersion)]
+    pub fn get_version(this: &OCGCore, major: u32, minor: u32);
+
+    #[wasm_bindgen(method, js_name = _OCG_CreateDuel)]
+    pub fn create_duel(this: &OCGCore, duel: u32, options: u32) -> i32;
+
+    #[wasm_bindgen(method, js_name = _OCG_StartDuel)]
+    pub fn start_duel(this: &OCGCore, duel: u32);
+
+    #[wasm_bindgen(method, js_name = _OCG_DuelProcess)]
+    pub fn process(this: &OCGCore, duel: u32) -> u32;
+
+    #[wasm_bindgen(method, js_name = _OCG_DuelGetMessage)]
+    pub fn get_message(this: &OCGCore, duel: u32, length_ptr: u32) -> u32;
+
+    #[wasm_bindgen(method, js_name = _OCG_DuelSetResponse)]
+    pub fn set_response(this: &OCGCore, duel: u32, response_ptr: u32, len: u32);
+
+    #[wasm_bindgen(method, js_name = _OCG_DuelNewCard)]
+    pub fn add_card(this: &OCGCore, duel: u32, info: u32);
+
+    #[wasm_bindgen(method, js_name = _OCG_LoadScript)]
+    pub fn load_script(this: &OCGCore, duel: u32, buffer: u32, len: u32, name: u32) -> i32;
+
+    #[wasm_bindgen(method, js_name = _OCG_DestroyDuel)]
+    pub fn destroy_duel(this: &OCGCore, duel: u32);
+
+    #[wasm_bindgen(method, js_name = _OCG_DuelQueryCount)]
+    pub fn query_count(this: &OCGCore, duel: u32, team: u8, location: u32) -> u32;
+
+    #[wasm_bindgen(method, js_name = _OCG_DuelQueryLocation)]
+    pub fn query_location(this: &OCGCore, duel: u32, length_ptr: u32, info_ptr: u32)
+    -> u32;
+
+    // Emscripten helpers
+    #[wasm_bindgen(method, getter, js_name = wasmMemory)]
+    pub fn get_wasm_memory(this: &OCGCore) -> js_sys::WebAssembly::Memory;
+
+    #[wasm_bindgen(method, js_name = _malloc)]
+    pub fn malloc(this: &OCGCore, size: u32) -> u32;
+
+    #[wasm_bindgen(method, js_name = _free)]
+    pub fn free(this: &OCGCore, ptr: u32);
+
+    #[wasm_bindgen(method, js_name = addFunction)]
+    pub fn add_function(this: &OCGCore, func: &js_sys::Function, signature: &str) -> u32;
+}
+
+impl OCGCore {
+    pub async fn new() -> Self {
+        let promise = _init();
+
+        let ocgcore = JsFuture::from(promise)
+            .await
+            .unwrap();
+
+        ocgcore.unchecked_into()
+    }
+}
