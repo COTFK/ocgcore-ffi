@@ -1,37 +1,41 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-mod backend;
-mod native;
 pub mod types;
+
+#[cfg(target_arch = "wasm32")]
 mod wasm;
+#[cfg(target_arch = "wasm32")]
+use wasm::WasmCore as InnerCore;
+
+#[cfg(not(target_arch = "wasm32"))]
+mod native;
+#[cfg(not(target_arch = "wasm32"))]
+use native::NativeCore as InnerCore;
 
 use std::ffi::c_void;
-
-use crate::backend::OCGCoreBackend;
 
 use types::OCG_Duel;
 use types::OCG_DuelOptions;
 use types::OCG_NewCardInfo;
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct OCGCore {
-    backend: Box<dyn OCGCoreBackend + Send + Sync>,
+    backend: InnerCore,
 }
 
 impl OCGCore {
     pub async fn new() -> Self {
         #[cfg(target_arch = "wasm32")]
         {
-            use crate::wasm::WasmCore;
             Self {
-                backend: Box::new(WasmCore::new().await),
+                backend: InnerCore::new().await,
             }
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
-            use crate::native::NativeCore;
             Self {
-                backend: Box::new(NativeCore {}),
+                backend: InnerCore {},
             }
         }
     }

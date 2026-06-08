@@ -8,7 +8,6 @@ use std::ffi::c_void;
 use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 
-use crate::backend::OCGCoreBackend;
 use crate::types::OCG_DataReader;
 use crate::types::OCG_DataReaderDone;
 use crate::types::OCG_Duel;
@@ -221,10 +220,8 @@ impl WasmCore {
 
         options_alloc.pointer
     }
-}
 
-impl OCGCoreBackend for WasmCore {
-    fn OCG_GetVersion(&self, major: &mut i32, minor: &mut i32) {
+    pub fn OCG_GetVersion(&self, major: &mut i32, minor: &mut i32) {
         let major_alloc = self.allocate_memory(std::mem::size_of::<i32>() as u32);
         let minor_alloc = self.allocate_memory(std::mem::size_of::<i32>() as u32);
 
@@ -238,7 +235,7 @@ impl OCGCoreBackend for WasmCore {
         *minor = view.get_int32_endian(minor_alloc.pointer as usize, true);
     }
 
-    fn OCG_CreateDuel(
+    pub fn OCG_CreateDuel(
         &self,
         out_ocg_duel: *mut OCG_Duel,
         options_ptr: *const OCG_DuelOptions,
@@ -284,7 +281,7 @@ impl OCGCoreBackend for WasmCore {
         status
     }
 
-    fn OCG_DestroyDuel(&self, ocg_duel: OCG_Duel) {
+    pub fn OCG_DestroyDuel(&self, ocg_duel: OCG_Duel) {
         self._OCG_DestroyDuel(ocg_duel as usize as u32);
 
         let mut reg = CALLBACK_REGISTRY.lock().unwrap();
@@ -294,7 +291,7 @@ impl OCGCoreBackend for WasmCore {
         let _ = reg.log_handlers.remove(&(ocg_duel as usize));
     }
 
-    fn OCG_DuelNewCard(&self, ocg_duel: OCG_Duel, info_ptr: *const OCG_NewCardInfo) {
+    pub fn OCG_DuelNewCard(&self, ocg_duel: OCG_Duel, info_ptr: *const OCG_NewCardInfo) {
         let info_size = std::mem::size_of::<OCG_NewCardInfo>();
         let info_bytes = unsafe { std::slice::from_raw_parts(info_ptr.cast::<u8>(), info_size) };
 
@@ -306,15 +303,15 @@ impl OCGCoreBackend for WasmCore {
         self._OCG_DuelNewCard(ocg_duel as usize as u32, info_alloc.pointer);
     }
 
-    fn OCG_StartDuel(&self, ocg_duel: OCG_Duel) {
+    pub fn OCG_StartDuel(&self, ocg_duel: OCG_Duel) {
         self._OCG_StartDuel(ocg_duel as usize as u32);
     }
 
-    fn OCG_DuelProcess(&self, ocg_duel: OCG_Duel) -> i32 {
+    pub fn OCG_DuelProcess(&self, ocg_duel: OCG_Duel) -> i32 {
         self._OCG_DuelProcess(ocg_duel as usize as u32) as i32
     }
 
-    fn OCG_DuelGetMessage(&self, ocg_duel: OCG_Duel, length: *mut u32) -> *mut c_void {
+    pub fn OCG_DuelGetMessage(&self, ocg_duel: OCG_Duel, length: *mut u32) -> *mut c_void {
         let length_alloc = self.allocate_memory(4);
 
         let message =
@@ -331,7 +328,7 @@ impl OCGCoreBackend for WasmCore {
         message
     }
 
-    fn OCG_DuelSetResponse(&self, ocg_duel: OCG_Duel, buffer: *const c_void, length: u32) {
+    pub fn OCG_DuelSetResponse(&self, ocg_duel: OCG_Duel, buffer: *const c_void, length: u32) {
         if buffer.is_null() || length == 0 {
             self._OCG_DuelSetResponse(ocg_duel as usize as u32, 0, 0);
             return;
@@ -348,7 +345,7 @@ impl OCGCoreBackend for WasmCore {
         self._OCG_DuelSetResponse(ocg_duel as usize as u32, response_alloc.pointer, length);
     }
 
-    fn OCG_LoadScript(
+    pub fn OCG_LoadScript(
         &self,
         ocg_duel: OCG_Duel,
         buffer: *const std::ffi::c_char,
@@ -391,11 +388,11 @@ impl OCGCoreBackend for WasmCore {
         self._OCG_LoadScript(ocg_duel as usize as u32, buffer_ptr, length, name_ptr)
     }
 
-    fn OCG_DuelQueryCount(&self, ocg_duel: OCG_Duel, team: u8, loc: u32) -> u32 {
+    pub fn OCG_DuelQueryCount(&self, ocg_duel: OCG_Duel, team: u8, loc: u32) -> u32 {
         self._OCG_DuelQueryCount(ocg_duel as usize as u32, team, loc)
     }
 
-    fn OCG_DuelQuery(
+    pub fn OCG_DuelQuery(
         &self,
         ocg_duel: OCG_Duel,
         length: *mut u32,
@@ -426,7 +423,7 @@ impl OCGCoreBackend for WasmCore {
         result_ptr as *mut c_void
     }
 
-    fn OCG_DuelQueryLocation(
+    pub fn OCG_DuelQueryLocation(
         &self,
         ocg_duel: OCG_Duel,
         length: *mut u32,
@@ -457,7 +454,7 @@ impl OCGCoreBackend for WasmCore {
         result_ptr as *mut c_void
     }
 
-    fn OCG_DuelQueryField(&self, ocg_duel: OCG_Duel, length: *mut u32) -> *mut c_void {
+    pub fn OCG_DuelQueryField(&self, ocg_duel: OCG_Duel, length: *mut u32) -> *mut c_void {
         let length_alloc = self.allocate_memory(4);
 
         let result_ptr = self._OCG_DuelQueryField(ocg_duel as usize as u32, length_alloc.pointer);

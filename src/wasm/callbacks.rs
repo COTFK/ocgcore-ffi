@@ -13,7 +13,7 @@ use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CallbackRegistry {
     pub card_readers: HashMap<usize, OCG_DataReader>,
     pub card_done_callbacks: HashMap<usize, OCG_DataReaderDone>,

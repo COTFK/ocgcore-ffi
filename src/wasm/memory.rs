@@ -1,6 +1,6 @@
 use super::WasmCore;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CoreMemoryAllocation<'a> {
     pub core: &'a WasmCore,
     pub pointer: u32,
