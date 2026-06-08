@@ -6,12 +6,12 @@ pub mod types;
 #[cfg(target_arch = "wasm32")]
 mod wasm;
 #[cfg(target_arch = "wasm32")]
-use wasm::WasmCore as InnerCore;
+use wasm::WasmCore as Backend;
 
 #[cfg(not(target_arch = "wasm32"))]
 mod native;
 #[cfg(not(target_arch = "wasm32"))]
-use native::NativeCore as InnerCore;
+use native::NativeBackend as Backend;
 
 use std::ffi::c_void;
 
@@ -21,7 +21,7 @@ use types::OCG_NewCardInfo;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct OCGCore {
-    backend: InnerCore,
+    backend: Backend,
 }
 
 impl OCGCore {
@@ -29,13 +29,13 @@ impl OCGCore {
         #[cfg(target_arch = "wasm32")]
         {
             Self {
-                backend: InnerCore::new().await,
+                backend: Backend::new().await,
             }
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
             Self {
-                backend: InnerCore {},
+                backend: Backend {},
             }
         }
     }
