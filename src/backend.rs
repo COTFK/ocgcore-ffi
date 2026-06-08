@@ -1,5 +1,5 @@
-use std::ffi::c_void;
 use std::ffi::c_char;
+use std::ffi::c_void;
 
 use crate::types::OCG_Duel;
 use crate::types::OCG_DuelOptions;

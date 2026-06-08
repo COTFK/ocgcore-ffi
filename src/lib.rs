@@ -3,7 +3,7 @@
 
 mod backend;
 mod native;
-mod types;
+pub mod types;
 mod wasm;
 
 use std::ffi::c_void;

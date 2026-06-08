@@ -6,7 +6,9 @@ build = "src/build.rs"
 
 [dependencies]
 js-sys = "0.3.99"
+once_cell = "1.21.4"
 wasm-bindgen = "0.2.122"
+web-sys = { version = "0.3.99", features = ["Window"] }
 
 [build-dependencies]
 cc = "1.2.63"

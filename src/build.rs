@@ -40,35 +40,35 @@ fn main() {
             "-sWASM=0",
             "-sFILESYSTEM=0",
             "-sEXPORT_NAME=ocgcore",
-            "-sEXPORTED_FUNCTIONS=['_OCG_GetVersion','_OCG_CreateDuel','_OCG_DestroyDuel','_OCG_DuelNewCard','_OCG_StartDuel','_OCG_DuelProcess','_OCG_DuelGetMessage','_OCG_DuelSetResponse','_OCG_LoadScript','_OCG_DuelQueryCount','_OCG_DuelQuery','_OCG_DuelQueryLocation','_malloc','_free']",
+            "-sEXPORTED_FUNCTIONS=['_OCG_GetVersion','_OCG_CreateDuel','_OCG_DestroyDuel','_OCG_DuelNewCard','_OCG_StartDuel','_OCG_DuelProcess','_OCG_DuelGetMessage','_OCG_DuelSetResponse','_OCG_LoadScript','_OCG_DuelQueryCount','_OCG_DuelQuery','_OCG_DuelQueryLocation','_OCG_DuelQueryField','_malloc','_free']",
             "-sEXPORTED_RUNTIME_METHODS=['wasmMemory','addFunction']",
             "-sALLOW_MEMORY_GROWTH=1",
             "-sALLOW_TABLE_GROWTH=1",
             "-sENVIRONMENT=web",
             "-I",
-            &ocgcore_path.join("lua/src").to_str().unwrap(),
+            ocgcore_path.join("lua/src").to_str().unwrap(),
             "-I",
-            &ocgcore_path.to_str().unwrap(),
+            ocgcore_path.to_str().unwrap(),
             "-DMAKE_LIB",
             "-o",
-            &manifest_dir.join("ocgcore.js").to_str().unwrap(),
-            &ocgcore_path.join("card.cpp").to_str().unwrap(),
-            &ocgcore_path.join("duel.cpp").to_str().unwrap(),
-            &ocgcore_path.join("effect.cpp").to_str().unwrap(),
-            &ocgcore_path.join("field.cpp").to_str().unwrap(),
-            &ocgcore_path.join("interpreter.cpp").to_str().unwrap(),
-            &ocgcore_path.join("libcard.cpp").to_str().unwrap(),
-            &ocgcore_path.join("libdebug.cpp").to_str().unwrap(),
-            &ocgcore_path.join("libduel.cpp").to_str().unwrap(),
-            &ocgcore_path.join("libeffect.cpp").to_str().unwrap(),
-            &ocgcore_path.join("libgroup.cpp").to_str().unwrap(),
-            &ocgcore_path.join("ocgapi.cpp").to_str().unwrap(),
-            &ocgcore_path.join("operations.cpp").to_str().unwrap(),
-            &ocgcore_path.join("playerop.cpp").to_str().unwrap(),
-            &ocgcore_path.join("processor.cpp").to_str().unwrap(),
-            &ocgcore_path.join("processor_visit.cpp").to_str().unwrap(),
-            &ocgcore_path.join("scriptlib.cpp").to_str().unwrap(),
-            &ocgcore_path.join("lua/src/onelua.c").to_str().unwrap(),
+            manifest_dir.join("ocgcore.js").to_str().unwrap(),
+            ocgcore_path.join("card.cpp").to_str().unwrap(),
+            ocgcore_path.join("duel.cpp").to_str().unwrap(),
+            ocgcore_path.join("effect.cpp").to_str().unwrap(),
+            ocgcore_path.join("field.cpp").to_str().unwrap(),
+            ocgcore_path.join("interpreter.cpp").to_str().unwrap(),
+            ocgcore_path.join("libcard.cpp").to_str().unwrap(),
+            ocgcore_path.join("libdebug.cpp").to_str().unwrap(),
+            ocgcore_path.join("libduel.cpp").to_str().unwrap(),
+            ocgcore_path.join("libeffect.cpp").to_str().unwrap(),
+            ocgcore_path.join("libgroup.cpp").to_str().unwrap(),
+            ocgcore_path.join("ocgapi.cpp").to_str().unwrap(),
+            ocgcore_path.join("operations.cpp").to_str().unwrap(),
+            ocgcore_path.join("playerop.cpp").to_str().unwrap(),
+            ocgcore_path.join("processor.cpp").to_str().unwrap(),
+            ocgcore_path.join("processor_visit.cpp").to_str().unwrap(),
+            ocgcore_path.join("scriptlib.cpp").to_str().unwrap(),
+            ocgcore_path.join("lua/src/onelua.c").to_str().unwrap(),
         ]);
 
         let status = build.status().expect("Failed to execute em++");
@@ -84,20 +84,20 @@ fn main() {
         lua_build
             .cpp(true)
             .define("MAKE_LIB", None)
-            .file(&core_root.join("lua/src/onelua.c"))
-            .include(&core_root.join("lua/src"));
+            .file(core_root.join("lua/src/onelua.c"))
+            .include(core_root.join("lua/src"));
 
         let mut ocgcore_build = cc::Build::new();
         ocgcore_build
             .cpp(true)
-            .include(&core_root.join("lua/src"))
+            .include(core_root.join("lua/src"))
             .include(&core_root);
 
         let entries =
             std::fs::read_dir(&core_root).expect("Failed to read native ocgcore directory");
         for entry in entries.filter_map(Result::ok) {
             let path = entry.path();
-            if path.extension().map_or(false, |ext| ext == "cpp") {
+            if path.extension().is_some_and(|ext| ext == "cpp") {
                 ocgcore_build.file(path);
             }
         }
