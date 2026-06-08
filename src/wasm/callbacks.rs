@@ -1,3 +1,9 @@
+//! Callback trampoline functions.
+//!
+//! As the WebAssembly version of `ocgcore` doesn't have access to Rust memory,
+//! we need to expose helper functions to JS, inject the functions into Emscripten,
+//! then keep the functions alive throughout the application lifecycle via a callback registry.
+
 use std::ffi::c_char;
 use std::ffi::c_int;
 use std::ffi::c_void;
@@ -13,6 +19,7 @@ use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
+/// Global storage that maps active Wasm heap addresses to their respective Rust handlers.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CallbackRegistry {
     pub card_readers: HashMap<usize, OCG_DataReader>,
@@ -30,6 +37,7 @@ pub static CALLBACK_REGISTRY: Lazy<Mutex<CallbackRegistry>> = Lazy::new(|| {
     })
 });
 
+/// Queries the callback registry and extracts a copy of the target callback.
 fn get_callback<T, F>(accessor: F) -> Option<T>
 where
     T: Clone,
@@ -39,6 +47,11 @@ where
     accessor(&registry).cloned().flatten()
 }
 
+/// Trampoline for core logging outputs.
+///
+/// # Safety
+/// * `payload` must be a valid, unmutated linear memory address matching a key in the registry.
+/// * `string` must point to a valid, null-terminated C-string in the WebAssembly heap.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn wasm_log_trampoline(
     payload: *mut c_void,
@@ -52,6 +65,12 @@ pub unsafe extern "C" fn wasm_log_trampoline(
     }
 }
 
+/// Trampoline called before a card script is evaluated.
+///
+/// # Safety
+/// * `payload` must be a valid linear memory address matching a key in the registry.
+/// * `duel` must be a valid, initialized handle to an active core duel context.
+/// * `name` must point to a valid, null-terminated C-string naming the script asset.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn wasm_script_reader_trampoline(
     payload: *mut c_void,
@@ -62,6 +81,11 @@ pub unsafe extern "C" fn wasm_script_reader_trampoline(
         .map_or_else(|| 0, |callback| unsafe { callback(payload, duel, name) })
 }
 
+/// Trampoline called when the core requests raw card statistics during compilation initialization.
+///
+/// # Safety
+/// * `payload` must be a valid linear memory address matching a key in the registry.
+/// * `data` must point to a valid, mutable `OCG_CardData` layout allocated on the WebAssembly heap.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn wasm_card_reader_trampoline(
     payload: *mut c_void,
@@ -75,6 +99,11 @@ pub unsafe extern "C" fn wasm_card_reader_trampoline(
     }
 }
 
+/// Trampoline called once a card has finished loading into active context.
+///
+/// # Safety
+/// * `payload` must be a valid linear memory address matching a key in the registry.
+/// * `data` must point to a valid, initialized `OCG_CardData` structure layout.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn wasm_card_done_trampoline(payload: *mut c_void, data: *mut OCG_CardData) {
     if let Some(callback) = get_callback(|reg| reg.card_done_callbacks.get(&(payload as usize))) {
