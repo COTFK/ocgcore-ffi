@@ -10,6 +10,8 @@
 //! For `wasm32-unknown-unknown`, `ocgcore` is compiled using Emscripten to a JavaScript + WebAssembly bundle;
 //! that bundle is then interfaced with by [wasm_bindgen]. As such, for this target, additional logic is
 //! provided to handle memory management and callback function injection into Emscripten.
+//! 
+//! To initialize the WebAssembly module, call the async `initialize()` function. This will load the module and prepare it for use.
 //!
 //! [edo9300/ygopro-core]: https://github.com/edo9300/ygopro-core
 
