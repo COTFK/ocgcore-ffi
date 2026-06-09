@@ -37,8 +37,6 @@ use callbacks::CALLBACK_REGISTRY;
 
 static OUTPUT_BUFFER_REGISTRY: Lazy<Mutex<HashMap<usize, Vec<u8>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
-static DUEL_PAYLOAD_REGISTRY: Lazy<Mutex<HashMap<usize, [usize; 4]>>> =
-    Lazy::new(|| Mutex::new(HashMap::new()));
 
 /// Raw wasm-bindgen FFI - these methods need additional memory management,
 /// which the impl block on WasmBackend handles.
@@ -155,8 +153,8 @@ impl WasmBackend {
                 let duel_handle = self.read_u32(handle_storage_ptr.pointer);
                 *out_ocg_duel = duel_handle as usize as OCG_Duel;
 
-                let mut payload_registry = DUEL_PAYLOAD_REGISTRY.lock().unwrap();
-                payload_registry.insert(duel_handle as usize, payload_keys);
+                let mut callbacks = CALLBACK_REGISTRY.lock().unwrap();
+                callbacks.duel_payloads.insert(duel_handle as usize, payload_keys);
             }
         } else {
             self.cleanup_callbacks_for_payloads(payload_keys);
@@ -168,11 +166,12 @@ impl WasmBackend {
     pub unsafe fn OCG_DestroyDuel(&self, ocg_duel: OCG_Duel) {
         self._OCG_DestroyDuel(ocg_duel as usize as u32);
 
-        if let Some(payload_keys) = DUEL_PAYLOAD_REGISTRY
-            .lock()
-            .unwrap()
-            .remove(&(ocg_duel as usize))
-        {
+        let payload_keys = {
+            let mut callbacks = CALLBACK_REGISTRY.lock().unwrap();
+            callbacks.duel_payloads.remove(&(ocg_duel as usize))
+        };
+
+        if let Some(payload_keys) = payload_keys {
             self.cleanup_callbacks_for_payloads(payload_keys);
         }
 
