@@ -58,7 +58,8 @@ pub fn with_backend<R>(f: impl FnOnce(&WasmBackend) -> R) -> R {
 
 /// Raw wasm-bindgen FFI - these methods need additional memory management,
 /// which the impl block on WasmBackend handles.
-#[wasm_bindgen(module = "/ocgcore.js")]
+#[cfg_attr(feature = "bundled", wasm_bindgen(module = "/ocgcore.js"))]
+#[cfg_attr(not(feature = "bundled"), wasm_bindgen(raw_module = "/ocgcore.js"))]
 extern "C" {
     #[derive(Debug, Clone, PartialEq)]
     pub type WasmBackend;

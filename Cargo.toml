@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2024"
 build = "src/build.rs"
 
+[features]
+default = []
+bundled = []
+
 [dependencies]
 js-sys = "0.3.99"
 once_cell = "1.21.4"
