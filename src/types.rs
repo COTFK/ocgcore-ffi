@@ -1,14 +1,14 @@
 //! Raw types used by the `ocgcore` functions.
 //!
 //! These should be nearly-identical to their C++ equivalents.
-//! 
-//! # Thread Safety
-//! Types containing raw pointers—such as [`OCG_CardData`] (which contains a `*mut u16`) 
-//! and [`OCG_DuelOptions`] (which contains multiple `*mut c_void` payloads) are implicitly 
-//! marked as `!Send` and `!Sync` by the Rust compiler. 
 //!
-//! If you intend to use these types across thread boundaries, 
-//! you must provide your own explicit synchronization primitives (e.g., `Mutex`) 
+//! # Thread Safety
+//! Types containing raw pointers—such as [`OCG_CardData`] (which contains a `*mut u16`)
+//! and [`OCG_DuelOptions`] (which contains multiple `*mut c_void` payloads) are implicitly
+//! marked as `!Send` and `!Sync` by the Rust compiler.
+//!
+//! If you intend to use these types across thread boundaries,
+//! you must provide your own explicit synchronization primitives (e.g., `Mutex`)
 //! or safely implement `Send` and `Sync` using a custom marker layout.
 
 #![allow(non_camel_case_types)]
@@ -29,13 +29,13 @@ pub struct OCG_Player {
 ///
 /// Generally you want to instantiate this for every card in the duel,
 /// using data from a static database of sorts, whenever `ocgcore` calls the OCG_DataReader callback.
-/// 
+///
 /// # Thread Safety
-/// Because this type contains a `*mut u16`, the Rust compiler implicitly marks this type 
+/// Because this type contains a `*mut u16`, the Rust compiler implicitly marks this type
 /// as `!Send` and `!Sync`.
 ///
-/// If you intend to use this type across thread boundaries within a safe wrapper 
-/// crate, you must provide your own explicit synchronization primitives (e.g., `Mutex`) 
+/// If you intend to use this type across thread boundaries within a safe wrapper
+/// crate, you must provide your own explicit synchronization primitives (e.g., `Mutex`)
 /// or safely implement `Send` and `Sync` using a custom marker layout.
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -55,8 +55,8 @@ pub struct OCG_CardData {
 }
 
 /// A handle to a duel instance.
-/// 
-/// You should store this and keep it alive for the duration of the duel, 
+///
+/// You should store this and keep it alive for the duration of the duel,
 /// as most functions require this handle to exist to work properly.
 pub type OCG_Duel = *mut c_void;
 
@@ -78,13 +78,13 @@ pub type OCG_LogHandler =
     Option<unsafe extern "C" fn(payload: *mut c_void, string: *const c_char, log_type: c_int)>;
 
 /// Duel settings - rulesets, players, and the callbacks used during duel instantiation.
-/// 
+///
 /// # Thread Safety
-/// Because this type contains multiple `*mut c_void` payloads, the Rust compiler implicitly 
+/// Because this type contains multiple `*mut c_void` payloads, the Rust compiler implicitly
 /// marks this type as `!Send` and `!Sync`.
 ///
-/// If you intend to use this type across thread boundaries within a safe wrapper 
-/// crate, you must provide your own explicit synchronization primitives (e.g., `Mutex`) 
+/// If you intend to use this type across thread boundaries within a safe wrapper
+/// crate, you must provide your own explicit synchronization primitives (e.g., `Mutex`)
 /// or safely implement `Send` and `Sync` using a custom marker layout.
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]

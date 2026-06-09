@@ -1,5 +1,5 @@
 //! Compilation script for `src/ocgcore`.
-//! 
+//!
 //! For native targets, it compiles it normally via `[cc]`.
 //! For WebAssembly, Emscripten is used to compile the library to a JS+WebAssembly bundle.
 
