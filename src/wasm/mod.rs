@@ -38,6 +38,24 @@ use callbacks::CALLBACK_REGISTRY;
 static OUTPUT_BUFFER_REGISTRY: Lazy<Mutex<HashMap<usize, Vec<u8>>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
+#[cfg(target_arch = "wasm32")]
+thread_local! {
+    pub static WASM_BACKEND: std::cell::RefCell<Option<WasmBackend>> = const {
+        std::cell::RefCell::new(None)
+    };
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn with_backend<R>(f: impl FnOnce(&WasmBackend) -> R) -> R {
+    WASM_BACKEND.with(|backend_cell| {
+        let backend_ref = backend_cell.borrow();
+        let backend = backend_ref
+            .as_ref()
+            .expect("ocgcore-ffi not initialized: call OCG_Initialize() first");
+        f(backend)
+    })
+}
+
 /// Raw wasm-bindgen FFI - these methods need additional memory management,
 /// which the impl block on WasmBackend handles.
 #[wasm_bindgen(module = "/ocgcore.js")]
@@ -154,7 +172,9 @@ impl WasmBackend {
                 *out_ocg_duel = duel_handle as usize as OCG_Duel;
 
                 let mut callbacks = CALLBACK_REGISTRY.lock().unwrap();
-                callbacks.duel_payloads.insert(duel_handle as usize, payload_keys);
+                callbacks
+                    .duel_payloads
+                    .insert(duel_handle as usize, payload_keys);
             }
         } else {
             self.cleanup_callbacks_for_payloads(payload_keys);
