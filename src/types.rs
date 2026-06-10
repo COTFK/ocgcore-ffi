@@ -38,7 +38,7 @@ pub struct OCG_Player {
 /// crate, you must provide your own explicit synchronization primitives (e.g., `Mutex`)
 /// or safely implement `Send` and `Sync` using a custom marker layout.
 #[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy)]
 pub struct OCG_CardData {
     pub code: u32,
     pub alias: u32,
