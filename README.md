@@ -1,6 +1,6 @@
 # `ocgcore-ffi`
 
-Rust bindings for [`edo9300/ygopro-core`] (aka `ocgcore`).
+This crate exposes low-level Rust bindings to the C API of [`edo9300/ygopro-core`] (aka `ocgcore`).
 
 Only the bare minimum[^1] required for Rust applications to interface with the C API is provided; users are expected to implement their own safe abstractions on top of this crate.
 
@@ -8,7 +8,7 @@ Only the bare minimum[^1] required for Rust applications to interface with the C
 First and foremost, read the [`edo9300/ygopro-core`] documentation - this crate mirrors the C API exactly.
 
 ### Add the crate to your project
-In your `cargo.toml`:
+In your `Cargo.toml`:
 ```toml
 [dependencies]
 # The `bundled` feature enables automatic compilation and linking of `ocgcore`.
@@ -68,12 +68,12 @@ fn main() {
 The `bundled` feature enables automatic compilation and linking of `ocgcore` during build. **This is disabled by default.**
 
 For native builds, however, we recommend enabling it as it simplifies the work you need to do to use this crate.
-Should you choose to keep it disabled, you need to make sure you compile and link `ocgcore` yourself during build.
+If you keep it disabled, you need to make sure you compile and link `ocgcore` yourself during build.
 
 ### WebAssembly
 For the `bundled` feature to work, you will need to install [Emscripten] and make sure the `EMSDK` environment variable is set. We will use it to cross-compile `ocgcore` and load the output as a JS snippet using `wasm-bindgen`.
 
-This is actually _less performant_ than bundling it yourself, due to using the `-sWASM=0` parameter to generate a standalone JS file (see [`src/build.rs`](src/build.rs)).
+This may be less performant than building and bundling it yourself, due to using the `-sWASM=0` parameter to generate a standalone JS file (see [`src/build.rs`](src/build.rs)).
 
 In your own project, you should use `-sWASM=1` to generate a `*.wasm` binary, plus the `*.js` helper required by Emscripten, both of which should be smaller and more performant than the standalone JS file.
 
