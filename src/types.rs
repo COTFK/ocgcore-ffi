@@ -14,7 +14,8 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use std::ffi::{c_char, c_int, c_void};
+use std::ffi::c_char;
+use std::ffi::c_void;
 
 /// Represents a player and their starting state (LP, cards in hand, draws per turn).
 #[repr(C)]
@@ -70,12 +71,12 @@ pub type OCG_DataReaderDone =
 
 /// Script reader callback - `ocgcore` will call this *before* a card is added to the duel.
 pub type OCG_ScriptReader = Option<
-    unsafe extern "C" fn(payload: *mut c_void, duel: OCG_Duel, name: *const c_char) -> c_int,
+    unsafe extern "C" fn(payload: *mut c_void, duel: OCG_Duel, name: *const c_char) -> i32,
 >;
 
 /// Log callback - `ocgcore` will call this when it wants to output log data.
 pub type OCG_LogHandler =
-    Option<unsafe extern "C" fn(payload: *mut c_void, string: *const c_char, log_type: c_int)>;
+    Option<unsafe extern "C" fn(payload: *mut c_void, string: *const c_char, log_type: i32)>;
 
 /// Duel settings - rulesets, players, and the callbacks used during duel instantiation.
 ///
