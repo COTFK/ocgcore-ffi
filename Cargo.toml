@@ -1,7 +1,7 @@
 [package]
 name = "ocgcore-ffi"
 description = "Low-level Rust bindings for edo9300/ygopro-core (aka `ocgcore`)"
-version = "0.1.0"
+version = "0.1.1"
 license = "AGPL-3.0-only"
 edition = "2024"
 build = "src/build.rs"
