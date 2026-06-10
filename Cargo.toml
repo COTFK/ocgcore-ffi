@@ -1,8 +1,13 @@
 [package]
 name = "ocgcore-ffi"
+description = "Low-level Rust bindings for edo9300/ygopro-core (aka `ocgcore`)"
 version = "0.1.0"
+license = "AGPL-3.0-only"
 edition = "2024"
 build = "src/build.rs"
+repository = "https://github.com/COTFK/ocgcore-ffi"
+keywords = ["yu-gi-oh", "ocgcore", "edopro", "ygopro-core", "ygopro"]
+categories = ["external-ffi-bindings", "game-development", "simulation"]
 
 [features]
 default = []
