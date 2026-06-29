@@ -90,6 +90,7 @@ fn main() {
             let mut lua_build = cc::Build::new();
             lua_build
                 .cpp(true)
+                .std("c++17")
                 .define("MAKE_LIB", None)
                 .file(core_root.join("lua/src/onelua.c"))
                 .include(core_root.join("lua/src"));
@@ -97,6 +98,7 @@ fn main() {
             let mut ocgcore_build = cc::Build::new();
             ocgcore_build
                 .cpp(true)
+                .std("c++17")
                 .include(core_root.join("lua/src"))
                 .include(&core_root);
 
