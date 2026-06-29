@@ -71,7 +71,7 @@ For native builds, however, we recommend enabling it as it simplifies the work y
 If you keep it disabled, you need to make sure you compile and link `ocgcore` yourself during build.
 
 ### WebAssembly
-For the `bundled` feature to work, you will need to install [Emscripten] and make sure the `EMSDK` environment variable is set. We will use it to cross-compile `ocgcore` and load the output as a JS snippet using `wasm-bindgen`.
+For the `bundled` feature to work, you will need to install [Emscripten] 6.0.0 (**NOTE: v6.0.1 does not work!**) and make sure the `EMSDK` environment variable is set. We will use it to cross-compile `ocgcore` and load the output as a JS snippet using `wasm-bindgen`.
 
 This may be less performant than building and bundling it yourself, due to using the `-sWASM=0` parameter to generate a standalone JS file (see [`src/build.rs`](src/build.rs)).
 
