@@ -86,21 +86,27 @@ fn main() {
         }
 
         if !is_wasm {
+            let target = env::var("TARGET").unwrap_or_default();
             let core_root = PathBuf::from(OCGCORE_ROOT);
-            let mut lua_build = cc::Build::new();
-            lua_build
-                .cpp(true)
-                .std("c++17")
-                .define("MAKE_LIB", None)
-                .file(core_root.join("lua/src/onelua.c"))
-                .include(core_root.join("lua/src"));
+            let out_dir = PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR not set"));
+            let onelua_cpp = out_dir.join("onelua.cpp");
+            std::fs::copy(core_root.join("lua/src/onelua.c"), &onelua_cpp)
+                .expect("Failed to stage onelua.cpp");
 
             let mut ocgcore_build = cc::Build::new();
             ocgcore_build
                 .cpp(true)
                 .std("c++17")
+                .define("MAKE_LIB", None)
                 .include(core_root.join("lua/src"))
-                .include(&core_root);
+                .include(&core_root)
+                .file(&onelua_cpp);
+
+            if target.contains("msvc") {
+                ocgcore_build.flag("/EHsc");
+            } else {
+                ocgcore_build.flag("-fexceptions");
+            }
 
             let entries =
                 std::fs::read_dir(&core_root).expect("Failed to read native ocgcore directory");
@@ -110,7 +116,7 @@ fn main() {
                     ocgcore_build.file(path);
                 }
             }
-            lua_build.compile("luacore");
+
             ocgcore_build.compile("ocgcore");
         }
     }
