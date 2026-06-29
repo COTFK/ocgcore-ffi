@@ -6,7 +6,7 @@ license = "AGPL-3.0-only"
 edition = "2024"
 build = "src/build.rs"
 repository = "https://github.com/COTFK/ocgcore-ffi"
-keywords = ["yu-gi-oh", "ocgcore", "edopro", "ygopro-core", "ygopro"]
+keywords = ["yugioh", "ocgcore", "edopro", "ygopro-core", "ygopro"]
 categories = ["external-ffi-bindings", "game-development", "simulation"]
 
 [features]
