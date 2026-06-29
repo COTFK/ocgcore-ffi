@@ -14,7 +14,7 @@ In your `Cargo.toml`:
 # The `bundled` feature enables automatic compilation and linking of `ocgcore`.
 # If you do not activate it, you'll have to provide ocgcore yourself.
 # This can be helpful for certain targets (i.e. WebAssembly).
-ocgcore-ffi = { version = "0.1.2", features = ["bundled"] }
+ocgcore-ffi = { version = "0.1.4", features = ["bundled"] }
 ```
 
 >[!NOTE]
